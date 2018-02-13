@@ -48,26 +48,26 @@ echo "All Done!"
 echo ""
 
 echo "Subscribe to device shadow updates with:
-        mosquitto_sub -t \\\$aws/things/$thingId/shadow/update/accepted"
+        mosquitto_sub -t \\\$aws/things/$thingId/shadow/update/accepted -q 1"
 echo "Update device shadow with:
-        mosquitto_pub -t \\\$aws/things/$thingId/shadow/update -m '{\"state\": {\"reported\": {\"varName\": 1}}}'"
+        mosquitto_pub -t \\\$aws/things/$thingId/shadow/update -m '{\"state\": {\"reported\": {\"varName\": 1}}}' -q 1"
 echo ""
-echo "Retrieve the device shadow"
+echo "  To retrieve the device shadow"
 echo "Subscribe to device shadow get topic:
-    mosquitto_sub -t \\\$aws/things/$thingId/shadow/get/accepted"
+    mosquitto_sub -t \\\$aws/things/$thingId/shadow/get/accepted  -q 1" 
 echo "Trigger device shadow get with:
-    mosquitto_pub -t \\\$aws/things/$thingId/shadow/get -m ''"
+    mosquitto_pub -t \\\$aws/things/$thingId/shadow/get -m ''  -q 1"
 
 echo "Subscribe to device shadow updates with:
-    mosquitto_sub -t \\\$aws/things/$thingId/shadow/update/accepted" > /root/aws-topics.txt
+    mosquitto_sub -t \\\$aws/things/$thingId/shadow/update/accepted  -q 1" > /root/aws-topics.txt
 echo "Update device shadow with:
-    mosquitto_pub -t \\\$aws/things/$thingId/shadow/update -m '{\"state\": {\"reported\": {\"varName\": 1}}}'"  > /root/aws-topics.txt
+    mosquitto_pub -t \\\$aws/things/$thingId/shadow/update -m '{\"state\": {\"reported\": {\"varName\": 1}}}'  -q 1"  > /root/aws-topics.txt
 echo ""  > /root/aws-topics.txt
 echo "Retrieve the device shadow"  > /root/aws-topics.txt
 echo "Subscribe to device shadow get topic:
-    mosquitto_sub -t \\\$aws/things/$thingId/shadow/get/accepted"  > /root/aws-topics.txt
+    mosquitto_sub -t \\\$aws/things/$thingId/shadow/get/accepted  -q 1"  > /root/aws-topics.txt
 echo "Trigger device shadow get with:
-    mosquitto_pub -t \\\$aws/things/$thingId/shadow/get -m ''"  > /root/aws-topics.txt
+    mosquitto_pub -t \\\$aws/things/$thingId/shadow/get -m ''  -q 1"  > /root/aws-topics.txt
 
 
 
