@@ -17,6 +17,7 @@ bError=0
 bCmd=0
 scriptCommand=""
 scriptOption0=""
+scriptOption1=""
 
 #############################
 ##### Print Usage ###########
@@ -35,6 +36,17 @@ usage () {
 	_Print ""
 	_Print "	onion [OPTIONS] ethernet host"
 	_Print "		Set Ethernet port to be the network host"
+	_Print ""
+
+	_Print "Configure MJPG Streamer Settings:"
+	_Print "	onion [OPTIONS] mjpg-streamer setup"
+	_Print "		Configure mjpg-streamer with acceptable default options"
+	_Print ""
+	_Print "	onion [OPTIONS] mjpg-streamer <SETTING> <VALUE"
+	_Print "		Change a specific mjpg-streamer setting"
+	_Print "		Supported options:"
+	_Print "			resolution <WIDTHxHEIGHT>"
+	_Print "			fps <number>"
 	_Print ""
 
 	_Print ""
@@ -164,6 +176,39 @@ EOF
 	/etc/init.d/network restart
 }
 
+########################################
+###     MJPG Streamer Functions
+########################################
+# set mjpg-streamer default settings
+setMjpgStreamerDefault () {
+	# change the config
+	local fps=$(uci -q get mjpg-streamer.core.fps)
+	if [ "$fps" == "5" ]; then
+		uci set mjpg-streamer.core.fps='15'
+	fi
+
+	uci -q batch <<-EOF > /dev/null
+		delete mjpg-streamer.core.username
+		delete mjpg-streamer.core.password
+		set mjpg-streamer.core.enabled='1'
+		commit mjpg-streamer
+EOF
+
+	# restart the service
+	/etc/init.d/mjpg-streamer restart
+}
+
+# set a specified option for mjpg-streamer
+#	$1	- the option
+#	$2 	- the option value
+setMjpgStreamerOption () {
+	# change the config
+	uci set mjpg-streamer.core.$1="$2"
+	uci commit mjpg-streamer
+
+	# restart the service
+	/etc/init.d/mjpg-streamer restart
+}
 
 
 
@@ -205,6 +250,15 @@ do
 			scriptOption0="$1"
 			shift
 		;;
+		mjpg-streamer)
+			bCmd=1
+			scriptCommand="mjpg-streamer"
+			shift
+			scriptOption0="$1"
+			shift
+			scriptOption1="$1"
+			shift
+		;;
 		*)
 			echo "ERROR: Invalid Argument: $1"
 			usage
@@ -232,6 +286,14 @@ if [ $bCmd == 1 ]; then
 			setEthernetHost $bTest
 		elif [ "$scriptOption0" == "client" ]; then
 			setEthernetClient
+		fi
+	elif [ "$scriptCommand" == "mjpg-streamer" ]; then
+		if [ "$scriptOption0" == "setup" ]; then
+			setMjpgStreamerDefault
+		elif 	[ "$scriptOption0" == "resolution" ] ||
+					[ "$scriptOption0" == "fps" ];
+		then
+			setMjpgStreamerOption "$scriptOption0" "$scriptOption1"
 		fi
 	fi
 
