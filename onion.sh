@@ -2,7 +2,7 @@
 
 ## Onion script for various funcitonality
 
-. /usr/share/libubox/jshn.sh
+# . /usr/share/libubox/jshn.sh
 
 
 ### global variables
@@ -58,6 +58,19 @@ timeUsage () {
 	_Print ""
 }
 
+pwmUsage () {
+	_Print "Configure PWM Channel:"
+	_Print "	onion [OPTIONS] pwm <CHANNEL> <DUTY CYCLE> <FREQUENCY>"
+	_Print "		Set PWM Channel to PWM signal with specified duty cycle and frequency"
+	_Print "			CHANNEL     - can be 0 (GPIO18) or 1 (GPIO19)"
+	_Print "			DUTY CYCLE  - percentage, expressed 0 - 100"
+	_Print "			FREQUENCY   - signal frequency, expressed in Hz"
+	_Print ""
+	_Print "	onion [OPTIONS] pwm <CHANNEL> disable"
+	_Print "		Disable the specified PWM Channel"
+	_Print ""
+}
+
 usage () {
 	_Print "Functionality:"
 	_Print "	Configure Onion products"
@@ -72,6 +85,8 @@ usage () {
 	mjpgStreamerUsage
 
 	timeUsage
+
+	pwmUsage
 
 	_Print ""
 	_Print "Command Line Options:"
@@ -660,6 +675,61 @@ syncTime () {
 }
 
 ########################################
+###     PWM Functions
+########################################
+# check if pwm module is installed
+isPwmAvailable () {
+	if [ -d "/sys/class/pwm/pwmchip0" ]; then
+		echo "1"
+	else
+		echo "0"
+	fi
+}
+
+# check if channel is valid
+# $1 - channel
+isPwmChannelValid () {
+	case "$1" in
+		0|1|2|3)
+			echo "1"
+		;;
+		*)
+			echo "0"
+		;;
+	esac
+}
+
+# set a PWM channel to a duty cycle and frequency
+#	$1	- channel
+#	$2	- duty cycle
+#	$3	- frequency
+setPwmChannel () {
+	local period=$(echo "1/$3 * 1000000000" | bc -l)
+	local pulseWidth=$(echo "$period * $2 / 100" | bc -l)
+	period=$(echo "scale=0; $period/1" | bc -l)
+	pulseWidth=$(echo "scale=0; $pulseWidth/1" | bc -l)
+	# echo "period = $period"
+	# echo "pulseWidth = $pulseWidth"
+
+	# set the PWM
+	echo "$1" > /sys/class/pwm/pwmchip0/export
+
+	echo "$period" > /sys/class/pwm/pwmchip0/pwm0/period
+	echo "$pulseWidth" > /sys/class/pwm/pwmchip0/pwm0/duty_cycle
+
+	echo "1" > /sys/class/pwm/pwmchip0/pwm0/enable
+
+	echo "$1" > /sys/class/pwm/pwmchip0/unexport
+}
+
+disablePwmChannel () {
+	# disable the PWM chanel
+	echo "$1" > /sys/class/pwm/pwmchip0/export
+	echo "0" > /sys/class/pwm/pwmchip0/pwm0/enable
+	echo "$1" > /sys/class/pwm/pwmchip0/unexport
+}
+
+########################################
 ###     Parse Arguments
 ########################################
 
@@ -709,6 +779,17 @@ do
 		time)
 			bCmd=1
 			scriptCommand="time"
+			shift
+			scriptOption0="$1"
+			shift
+			scriptOption1="$1"
+			shift
+			scriptOption2="$1"
+			shift
+		;;
+		pwm)
+			bCmd=1
+			scriptCommand="pwm"
 			shift
 			scriptOption0="$1"
 			shift
@@ -769,7 +850,29 @@ if [ $bCmd == 1 ]; then
 				setTimezone "$scriptOption1" "$scriptOption2"
 			fi
 		fi
-fi
+	elif [ "$scriptCommand" == "pwm" ]; then
+		# check if pwm kernel module is installed
+		pwmValid=$(isPwmAvailable)
+		if [ "$pwmValid" != "1" ]; then
+			echo "ERROR: PWM functionality not available"
+			echo "  ensure your Omega is on the latest firmware and run:"
+			echo "    opkg update"
+			echo "    opkg install kmod-pwm-mediatek"
+			exit 1
+		fi
+		# check if channel is valid
+		validChannel=$(isPwmChannelValid "$scriptOption0")
+		if [ "$validChannel" != "1" ]; then
+			echo "ERROR: expecting channel value 0 to 1"
+			pwmUsage
+			exit 1
+		fi
+		if [ "$scriptOption1" == "disable" ]; then
+			disablePwmChannel "$scriptOption0"
+		else
+			setPwmChannel "$scriptOption0" "$scriptOption1" "$scriptOption2"
+		fi
+	fi
 
 else
 	usage
