@@ -714,10 +714,10 @@ setPwmChannel () {
 	# set the PWM
 	echo "$1" > /sys/class/pwm/pwmchip0/export
 
-	echo "$period" > /sys/class/pwm/pwmchip0/pwm0/period
-	echo "$pulseWidth" > /sys/class/pwm/pwmchip0/pwm0/duty_cycle
+	echo "$period" > /sys/class/pwm/pwmchip0/pwm$1/period
+	echo "$pulseWidth" > /sys/class/pwm/pwmchip0/pwm$1/duty_cycle
 
-	echo "1" > /sys/class/pwm/pwmchip0/pwm0/enable
+	echo "1" > /sys/class/pwm/pwmchip0/pwm$1/enable
 
 	echo "$1" > /sys/class/pwm/pwmchip0/unexport
 }
@@ -725,7 +725,7 @@ setPwmChannel () {
 disablePwmChannel () {
 	# disable the PWM chanel
 	echo "$1" > /sys/class/pwm/pwmchip0/export
-	echo "0" > /sys/class/pwm/pwmchip0/pwm0/enable
+	echo "0" > /sys/class/pwm/pwmchip0/pwm$1/enable
 	echo "$1" > /sys/class/pwm/pwmchip0/unexport
 }
 
