@@ -2,7 +2,7 @@
 
 echo "Installing MQTT tools..."
 opkg update > /dev/null
-opkg install mosquitto-ssl mosquitto-client-ssl libmosquitto-ssl > /dev/null
+opkg install mosquitto mosquitto-client libmosquitto > /dev/null
 
 echo "Setup AWS IoT Access..."
 read -p "AWS IoT Endpoint: " serviceEndpint
@@ -18,6 +18,7 @@ echo "Copying certificate and key..."
 cp $certPath /etc/awsiot/$thingId-certificate.pem.crt
 cp $keyPath /etc/awsiot/$thingId-private.pem.key
 
+mkdir -p /etc/mosquitto/
 echo "# For debugging
 log_type all
 
@@ -54,7 +55,7 @@ echo "Update device shadow with:
 echo ""
 echo "  To retrieve the device shadow"
 echo "Subscribe to device shadow get topic:
-    mosquitto_sub -t \\\$aws/things/$thingId/shadow/get/accepted  -q 1" 
+    mosquitto_sub -t \\\$aws/things/$thingId/shadow/get/accepted  -q 1"
 echo "Trigger device shadow get with:
     mosquitto_pub -t \\\$aws/things/$thingId/shadow/get -m ''  -q 1"
 
@@ -68,6 +69,3 @@ echo "Subscribe to device shadow get topic:
     mosquitto_sub -t \\\$aws/things/$thingId/shadow/get/accepted  -q 1"  >> /root/aws-topics.txt
 echo "Trigger device shadow get with:
     mosquitto_pub -t \\\$aws/things/$thingId/shadow/get -m ''  -q 1"  >> /root/aws-topics.txt
-
-
-
