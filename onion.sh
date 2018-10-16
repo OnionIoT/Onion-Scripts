@@ -71,6 +71,13 @@ pwmUsage () {
 	_Print ""
 }
 
+osUsage () {
+	_Print "Configure OnionOS:"
+	_Print "	onion [OPTIONS] os update"
+	_Print "		Update OnionOS to the latest available version"
+	_Print ""
+}
+
 usage () {
 	_Print "Functionality:"
 	_Print "	Configure Onion products"
@@ -87,6 +94,8 @@ usage () {
 	timeUsage
 
 	pwmUsage
+
+	osUsage
 
 	_Print ""
 	_Print "Command Line Options:"
@@ -730,6 +739,38 @@ disablePwmChannel () {
 }
 
 ########################################
+###     OnionOS Functions
+########################################
+onionOsUpdate () {
+	_Print "Updating OnionOS"
+	# update OnionOS
+	opkg update > /dev/null
+	opkg upgrade onion-os > /dev/null
+	# remove any out-dated packages
+	for pkg in "oos-app-camera" "oos-app-editor" "oos-app-nfc-exp" "oos-app-nfc-exp" "oos-app-sensor-monitor" "oos-app-power-dock-2"
+	do
+		opkg remove $pkg > /dev/null
+	done
+	# remove any out-dated files
+	for dir in "editor" "nfc-rfid-exp" "oos-app-camera"
+	do
+		if [ -d "/www/apps/$dir" ]; then
+			rm -rf /www/apps/$dir
+		fi
+	done
+	# update any outdated apps
+	for pkg in "oos-app-sensor-monitor" "oos-app-power-dock-2"
+	do
+		local exists=$(opkg list-installed | grep $pkg)
+		if [ "$exists" != "" ]; then
+			opkg upgrade $pkg > /dev/null
+		fi
+	done
+	_Print "Done"
+}
+
+
+########################################
 ###     Parse Arguments
 ########################################
 
@@ -796,6 +837,13 @@ do
 			scriptOption1="$1"
 			shift
 			scriptOption2="$1"
+			shift
+		;;
+		os)
+			bCmd=1
+			scriptCommand="os"
+			shift
+			scriptOption0="$1"
 			shift
 		;;
 		*)
@@ -871,6 +919,10 @@ if [ $bCmd == 1 ]; then
 			disablePwmChannel "$scriptOption0"
 		else
 			setPwmChannel "$scriptOption0" "$scriptOption1" "$scriptOption2"
+		fi
+	elif [ "$scriptCommand" == "os" ]; then
+		if [ "$scriptOption0" == "update" ]; then
+			onionOsUpdate
 		fi
 	fi
 
