@@ -73,6 +73,9 @@ pwmUsage () {
 
 osUsage () {
 	_Print "Configure OnionOS:"
+	_Print "	onion [OPTIONS] os version"
+	_Print "		Display Omega and OnionOS version information"
+	_Print ""
 	_Print "	onion [OPTIONS] os update"
 	_Print "		Update OnionOS to the latest available version"
 	_Print ""
@@ -769,6 +772,21 @@ onionOsUpdate () {
 	_Print "Done"
 }
 
+onionOSVersion () {
+	local fwVer=$(uci -q get onion.@onion[0].version)
+	local fwBuild=$(uci -q get onion.@onion[0].build)
+	local fw="v$fwVer b$fwBuild"
+	local osVer=$(opkg list-installed | grep onion-os)
+	local appsVers=$(opkg list-installed | grep oos-)
+	_Print "=== Version Info ==="
+	_Print "Omega firmware: $fw"
+	_Print "$osVer"
+	if [ "$appsVers" != "" ]; then
+		_Print " = OnionOS Apps ="
+		_Print "$appsVers"
+	fi
+}
+
 
 ########################################
 ###     Parse Arguments
@@ -923,6 +941,8 @@ if [ $bCmd == 1 ]; then
 	elif [ "$scriptCommand" == "os" ]; then
 		if [ "$scriptOption0" == "update" ]; then
 			onionOsUpdate
+		elif [ "$scriptOption0" == "version" ]; then
+			onionOSVersion
 		fi
 	fi
 
