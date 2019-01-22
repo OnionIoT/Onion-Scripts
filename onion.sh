@@ -590,7 +590,7 @@ listTimezones () {
 	_Print "Europe/Mariehamn	EET-2EEST,M3.5.0/3,M10.5.0/4"
 	_Print "Europe/Minsk	EET-2EEST,M3.5.0,M10.5.0/3"
 	_Print "Europe/Monaco	CET-1CEST,M3.5.0,M10.5.0/3"
-	_Print "Europe/Moscow	MSK-4"
+	_Print "Europe/Moscow	MSK-3"
 	_Print "Europe/Oslo	CET-1CEST,M3.5.0,M10.5.0/3"
 	_Print "Europe/Paris	CET-1CEST,M3.5.0,M10.5.0/3"
 	_Print "Europe/Podgorica	CET-1CEST,M3.5.0,M10.5.0/3"
