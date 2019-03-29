@@ -12,7 +12,7 @@ read -p "Path to AWS IoT private key: " keyPath
 
 echo "Downloading AWS IoT Root Certificate..."
 mkdir -p /etc/awsiot/
-wget -q https://www.symantec.com/content/en/us/enterprise/verisign/roots/VeriSign-Class%203-Public-Primary-Certification-Authority-G5.pem -O /etc/awsiot/RootCA.pem
+wget -q https://www.amazontrust.com/repository/AmazonRootCA1.pem -O /etc/awsiot/RootCA.pem
 
 echo "Copying certificate and key..."
 cp $certPath /etc/awsiot/$thingId-certificate.pem.crt
