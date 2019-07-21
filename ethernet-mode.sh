@@ -3,6 +3,7 @@
 START=90
 
 USE_PROCD=1
+KEY="40A36BC00000"
 
 generateMacUid () {
     # grab line 2 of iwpriv output
@@ -25,9 +26,10 @@ generateMacUid () {
 boot() {
     mac=$(generateMacUid)
     echo "$mac" > /tmp/mac.boot
-    if [ "$mac" == "40A36BC00000" ]; then
+    if [ "$mac" == "$KEY" ]; then
         # switch to ethernet host mode
         onion -t ethernet host
+        # enable telnet server daemon
+        telnetd
     fi
 }
-
