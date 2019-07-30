@@ -30,6 +30,9 @@ ethernetUsage () {
 	_Print "	onion [OPTIONS] ethernet host"
 	_Print "		Set Ethernet port to be the network host"
 	_Print ""
+	_Print "	onion [OPTIONS] ethernet check"
+	_Print "		Check Ethernet port configuration (client or host)"
+	_Print ""
 }
 
 mjpgStreamerUsage () {
@@ -225,6 +228,19 @@ EOF
 
 	# restart the network
 	/etc/init.d/network restart
+}
+
+# check if ethernet is configured for client or host mode
+#	returns 
+#		client
+#		host 
+checkEthernetMode() {
+	mode="client"
+	hostIntf=$(uci -q get network.lan)
+	if [ "$hostIntf" != "" ]; then
+		mode="host"
+	fi
+	echo "$mode"
 }
 
 ########################################
@@ -891,6 +907,9 @@ if [ $bCmd == 1 ]; then
 			setEthernetHost $bTest
 		elif [ "$scriptOption0" == "client" ]; then
 			setEthernetClient
+		elif [ "$scriptOption0" == "check" ]; then
+			ret=$(checkEthernetMode)
+			_Print "$ret"
 		fi
 	elif [ "$scriptCommand" == "mjpg-streamer" ]; then
 		if [ "$scriptOption0" == "setup" ]; then
