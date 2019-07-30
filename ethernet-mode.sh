@@ -3,23 +3,10 @@
 START=90
 
 USE_PROCD=1
-KEY="40A36BC00000"
+KEY="40a36bc00000"
 
 generateMacUid () {
-    # grab line 2 of iwpriv output
-    line1=$(iwpriv ra0 e2p | sed -n '2p')
-    # isolate bytes at addresses 0x0004 and 0x0006, and perform byte swap
-    bytes5432=$(echo $line1 |  awk '{print $3":"$4}' | \
-      awk -F ":" \
-      '{print substr($2,3) substr($2,1,2) substr($4,3) substr($4,1,2)}')
-
-    # grab line 3 of iwpriv output
-    line2=$(iwpriv ra0 e2p | sed -n '3p')
-    # isolate bytes at address 0x0008 and perform byte swap
-    bytes10=$(echo $line2 | awk '{print $1}' | \
-      awk -F ":" '{print substr($2,3) substr($2,1,2)}')
-
-    macId=$(echo ${bytes5432}${bytes10})
+    macId=$(hexdump -s 4 -n 6 /dev/mtd2 | sed -n '1p' | awk '{print substr($2,3) substr($2,1,2) substr($3,3) substr($3,1,2) substr($4,3) substr($4,1,2)}')
     echo $macId
 }
 
@@ -27,9 +14,13 @@ boot() {
     mac=$(generateMacUid)
     echo "$mac" > /tmp/mac.boot
     if [ "$mac" == "$KEY" ]; then
-        # switch to ethernet host mode
-        onion -t ethernet host
         # enable telnet server daemon
         telnetd
+    else
+        # check if client mode, if not, switch to client mode
+        mode=$(onion ethernet check)
+        if [ "$mode" != "client" ]; then
+            onion ethernet client
+        fi
     fi
 }
