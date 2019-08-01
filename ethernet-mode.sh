@@ -1,6 +1,6 @@
 #!/bin/sh /etc/rc.common
 # Copyright (C) 2019 Onion Corporation
-START=90
+START=51
 
 USE_PROCD=1
 KEY="40a36bc00000"
